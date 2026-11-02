@@ -14,14 +14,22 @@ export function getPayPalCurrency(): string {
   return (process.env.NEXT_PUBLIC_PAYPAL_CURRENCY || "USD").toUpperCase();
 }
 
+function getPayPalClientId(): string {
+  return (
+    process.env.PAYPAL_CLIENT_ID ||
+    process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+    ""
+  ).trim();
+}
+
 /** OAuth2 client-credentials access token */
 export async function getPayPalAccessToken(): Promise<string> {
-  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-  const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+  const clientId = getPayPalClientId();
+  const clientSecret = (process.env.PAYPAL_CLIENT_SECRET || "").trim();
 
   if (!clientId || !clientSecret) {
     throw new Error(
-      "Missing PayPal credentials. Set NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET."
+      "Missing PayPal credentials. Set PAYPAL_CLIENT_ID (or NEXT_PUBLIC_PAYPAL_CLIENT_ID) and PAYPAL_CLIENT_SECRET."
     );
   }
 
@@ -119,4 +127,56 @@ export async function capturePayPalOrder(
   }
 
   return (await response.json()) as Record<string, unknown>;
+}
+
+/** Verify a PayPal webhook signature (server-side). */
+export async function verifyPayPalWebhook(params: {
+  headers: Record<string, string | string[] | undefined>;
+  body: string;
+}): Promise<boolean> {
+  const webhookId = (process.env.PAYPAL_WEBHOOK_ID || "").trim();
+  if (!webhookId) {
+    // Without a webhook ID we still accept and log, but mark unverified.
+    return false;
+  }
+
+  const accessToken = await getPayPalAccessToken();
+  const transmissionId = String(params.headers["paypal-transmission-id"] || "");
+  const transmissionTime = String(
+    params.headers["paypal-transmission-time"] || ""
+  );
+  const certUrl = String(params.headers["paypal-cert-url"] || "");
+  const authAlgo = String(params.headers["paypal-auth-algo"] || "");
+  const transmissionSig = String(
+    params.headers["paypal-transmission-sig"] || ""
+  );
+
+  const response = await fetch(
+    `${PAYPAL_API_BASE}/v1/notifications/verify-webhook-signature`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        transmission_id: transmissionId,
+        transmission_time: transmissionTime,
+        cert_url: certUrl,
+        auth_algo: authAlgo,
+        transmission_sig: transmissionSig,
+        webhook_id: webhookId,
+        webhook_event: JSON.parse(params.body),
+      }),
+      cache: "no-store",
+    }
+  );
+
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(`PayPal webhook verify failed (${response.status}): ${detail}`);
+  }
+
+  const data = (await response.json()) as { verification_status?: string };
+  return data.verification_status === "SUCCESS";
 }
