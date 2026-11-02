@@ -38,6 +38,8 @@ export default function PayPalCheckout({
       currency,
       intent: "capture",
       components: "buttons",
+      // Show Apple Pay in the Smart Buttons stack when device/account eligible
+      enableFunding: "applepay",
     }),
     [clientId, currency]
   );
