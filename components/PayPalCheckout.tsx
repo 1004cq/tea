@@ -73,7 +73,10 @@ export default function PayPalCheckout({
         </button>
       ) : (
         <>
-          <p className="checkout-hint">正在为「{productName}」唤起 PayPal…</p>
+          <p className="checkout-hint">
+            正在为「{productName}」唤起 PayPal… Apple Pay 请用 Safari，并确保
+            PayPal 后台已注册本站域名。
+          </p>
           <PayPalScriptProvider options={options}>
             <PayPalButtons
               style={{
@@ -117,10 +120,19 @@ export default function PayPalCheckout({
               }}
               onError={(err) => {
                 console.error("[PayPal]", err);
-                setError("支付过程出现问题，请稍后重试。");
+                const detail =
+                  err && typeof err === "object" && "message" in err
+                    ? String((err as { message?: unknown }).message || "")
+                    : "";
+                setError(
+                  detail
+                    ? `支付失败：${detail}`
+                    : "支付失败。若使用 Apple Pay，请改用 Safari，并确认 PayPal Live 已注册 shop.duojiayi.com。"
+                );
                 setStarted(false);
               }}
               onCancel={() => {
+                setError("已取消支付。");
                 setStarted(false);
               }}
             />
