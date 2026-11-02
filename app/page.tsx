@@ -4,7 +4,10 @@ import { products } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 
 export default function HomePage() {
-  const featured = products.slice(0, 2);
+  // Skip the 1¢ payment-test SKU on the homepage feature strip
+  const featured = products
+    .filter((product) => product.id !== "paypal-test-cent")
+    .slice(0, 2);
 
   return (
     <>
@@ -22,8 +25,9 @@ export default function HomePage() {
         </div>
 
         <div className="hero-content">
-          <p className="eyebrow">Fengqing · Yunnan</p>
+          <p className="eyebrow">Fengqing · Yunnan Highlands</p>
           <h1 className="hero-brand">凤庆滇红</h1>
+          <p className="hero-english">Dianhong Black Tea</p>
           <p className="hero-text">
             高山茶园，工夫红茶。蜜香甘醇，一盏见山。
           </p>
@@ -31,7 +35,7 @@ export default function HomePage() {
             <Link href="/products" className="btn btn-light">
               选购茶叶
             </Link>
-            <Link href="/about" className="btn btn-ghost" style={{ color: "#fffcf8", borderColor: "rgba(212,184,150,0.7)" }}>
+            <Link href="/about" className="btn btn-hero-ghost">
               品牌故事
             </Link>
           </div>
@@ -50,7 +54,7 @@ export default function HomePage() {
             />
           </div>
           <div className="split-copy">
-            <p className="eyebrow">Brand</p>
+            <p className="eyebrow">Brand Story</p>
             <h2>一叶滇红，一盏时光</h2>
             <p className="muted">
               我们专注云南凤庆高山红茶，从茶园到杯中，坚持小批量精制。
@@ -59,7 +63,7 @@ export default function HomePage() {
             <p className="muted">
               每一款茶叶均标明等级与净重，价格透明；结账由 PayPal 托管，安全可靠。
             </p>
-            <div style={{ marginTop: "1.75rem" }}>
+            <div style={{ marginTop: "1.85rem" }}>
               <Link href="/about" className="btn btn-primary">
                 了解更多
               </Link>
@@ -71,7 +75,7 @@ export default function HomePage() {
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
           <div className="section-head">
-            <p className="eyebrow">Featured</p>
+            <p className="eyebrow">Featured Selection</p>
             <h2>热门产品</h2>
             <p>精选两款常年热销滇红，亦可前往产品页浏览全部茶款。</p>
           </div>
@@ -82,7 +86,7 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div style={{ marginTop: "2.5rem" }}>
+          <div style={{ marginTop: "2.6rem" }}>
             <Link href="/products" className="btn btn-ghost">
               查看全部产品
             </Link>

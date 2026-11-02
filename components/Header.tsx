@@ -20,7 +20,7 @@ export default function Header() {
       <div className="container nav-inner">
         <Link href="/" className="brand" onClick={() => setOpen(false)}>
           <span className="brand-mark">凤庆滇红</span>
-          <span className="brand-sub">Dianhong Tea</span>
+          <span className="brand-sub">Fengqing Dianhong</span>
         </Link>
 
         <button

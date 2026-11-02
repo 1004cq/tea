@@ -23,26 +23,28 @@ export default function ProductCard({ product }: ProductCardProps) {
         />
       </div>
 
-      <div className="product-meta">
-        <h3>{product.name}</h3>
-        <span className="product-price">
-          {currency} {product.price.toFixed(2)}
-        </span>
+      <div className="product-body">
+        <div className="product-meta">
+          <h3>{product.name}</h3>
+          <span className="product-price">
+            {currency} {product.price.toFixed(2)}
+          </span>
+        </div>
+
+        <div className="product-tags">
+          <span>{product.grade}</span>
+          <span>{product.weight}</span>
+          <span className="tag-en">{product.nameEn}</span>
+        </div>
+
+        <p className="product-desc">{product.description}</p>
+
+        <PayPalCheckout
+          productId={product.id}
+          productName={product.name}
+          price={product.price}
+        />
       </div>
-
-      <div className="product-tags">
-        <span>{product.grade}</span>
-        <span>{product.weight}</span>
-        <span>{product.nameEn}</span>
-      </div>
-
-      <p className="product-desc">{product.description}</p>
-
-      <PayPalCheckout
-        productId={product.id}
-        productName={product.name}
-        price={product.price}
-      />
     </article>
   );
 }
