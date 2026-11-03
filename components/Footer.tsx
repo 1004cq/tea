@@ -28,6 +28,9 @@ export default function Footer() {
             <li>
               <Link href="/contact">联系</Link>
             </li>
+            <li>
+              <Link href="/account">个人中心</Link>
+            </li>
           </ul>
         </div>
 

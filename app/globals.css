@@ -1146,6 +1146,157 @@ button {
   margin-top: 0.5rem;
 }
 
+/* Auth / account */
+.auth-panel {
+  max-width: 32rem;
+  padding-bottom: 2rem;
+}
+
+.auth-panel h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--color-tea);
+  margin: 0.75rem 0 1rem;
+}
+
+.auth-error {
+  margin: 1.25rem 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(139, 58, 58, 0.28);
+  background: rgba(139, 58, 58, 0.06);
+  color: #8b3a3a;
+  font-size: 0.92rem;
+}
+
+.btn-google {
+  width: 100%;
+  max-width: 26rem;
+  margin-top: 1.75rem;
+  gap: 0.75rem;
+  background: var(--color-white);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
+  box-shadow: var(--shadow-soft);
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+.btn-google:hover {
+  border-color: var(--color-gold-line);
+  background: rgba(154, 112, 72, 0.06);
+  color: var(--color-tea);
+}
+
+.account-card {
+  max-width: 36rem;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid var(--color-gold-line);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 252, 249, 0.95),
+    rgba(247, 243, 238, 0.7)
+  );
+}
+
+.account-identity {
+  display: flex;
+  gap: 1.15rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.account-identity h2 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  letter-spacing: 0.1em;
+  color: var(--color-tea);
+  margin-bottom: 0.25rem;
+}
+
+.account-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--color-gold-line);
+  flex-shrink: 0;
+}
+
+.account-avatar-fallback {
+  display: grid;
+  place-items: center;
+  background: rgba(74, 52, 40, 0.1);
+  font-family: var(--font-english);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-tea);
+}
+
+.account-provider {
+  margin-top: 0.35rem;
+  font-family: var(--font-english);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.account-meta {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1.15rem 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  margin-bottom: 1.35rem;
+}
+
+.account-meta > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+}
+
+.account-meta dt {
+  font-family: var(--font-english);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.account-meta dd {
+  color: var(--color-leaf);
+  word-break: break-all;
+}
+
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.nav-auth-placeholder {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.35rem;
+  padding: 0 1.05rem;
+  color: var(--color-moss);
+}
+
+.nav-account {
+  gap: 0.45rem !important;
+}
+
+.nav-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 /* Motion */
 @keyframes riseIn {
   from {
@@ -1319,6 +1470,19 @@ button {
   .product-price {
     justify-items: start;
     align-self: flex-start;
+  }
+
+  .account-meta > div {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+
+  .account-actions {
+    flex-direction: column;
+  }
+
+  .account-actions .btn {
+    width: 100%;
   }
 
   .site-footer {

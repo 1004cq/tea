@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 const links = [
@@ -13,7 +15,9 @@ const links = [
 
 export default function Header() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
+  const user = session?.user;
 
   return (
     <header className="site-header">
@@ -45,6 +49,38 @@ export default function Header() {
               </Link>
             </li>
           ))}
+          <li className="nav-auth">
+            {status === "loading" ? (
+              <span className="nav-auth-placeholder">…</span>
+            ) : user ? (
+              <Link
+                href="/account"
+                className="nav-account"
+                aria-current={pathname === "/account" ? "page" : undefined}
+                onClick={() => setOpen(false)}
+              >
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt=""
+                    width={22}
+                    height={22}
+                    className="nav-avatar"
+                    unoptimized
+                  />
+                ) : null}
+                <span>个人中心</span>
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                aria-current={pathname === "/login" ? "page" : undefined}
+                onClick={() => setOpen(false)}
+              >
+                登录
+              </Link>
+            )}
+          </li>
         </ul>
       </div>
     </header>
