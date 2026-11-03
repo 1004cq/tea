@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   PayPalButtons,
   PayPalScriptProvider,
   type ReactPayPalScriptOptions,
 } from "@paypal/react-paypal-js";
+import GooglePayButton from "@/components/GooglePayButton";
 
 type PayPalCheckoutProps = {
   productId: string;
@@ -17,6 +18,7 @@ type PayPalCheckoutProps = {
 /**
  * PayPal Buttons for a single product.
  * createOrder / onApprove call our Next.js API routes so the secret never leaves the server.
+ * Google Pay is rendered as a separate button when eligible.
  */
 export default function PayPalCheckout({
   productId,
@@ -37,12 +39,16 @@ export default function PayPalCheckout({
       clientId: clientId || "test",
       currency,
       intent: "capture",
-      components: "buttons",
-      // Show Apple Pay in the Smart Buttons stack when device/account eligible
+      // buttons = PayPal/Apple Pay stack; googlepay = paypal.Googlepay() API
+      components: "buttons,googlepay",
       enableFunding: "applepay",
     }),
     [clientId, currency]
   );
+
+  const handleGoogleError = useCallback((message: string) => {
+    setError(message);
+  }, []);
 
   if (!clientId) {
     return (
@@ -74,10 +80,16 @@ export default function PayPalCheckout({
       ) : (
         <>
           <p className="checkout-hint">
-            正在为「{productName}」唤起 PayPal… Apple Pay 请用 Safari，并确保
-            PayPal 后台已注册本站域名。
+            正在为「{productName}」唤起支付… Apple Pay 请用 Safari；Google Pay
+            请用 Chrome，并在 PayPal Live 应用中勾选 Google Pay。
           </p>
           <PayPalScriptProvider options={options}>
+            <GooglePayButton
+              productId={productId}
+              price={price}
+              currency={currency}
+              onError={handleGoogleError}
+            />
             <PayPalButtons
               style={{
                 layout: "vertical",
@@ -127,7 +139,7 @@ export default function PayPalCheckout({
                 setError(
                   detail
                     ? `支付失败：${detail}`
-                    : "支付失败。若使用 Apple Pay，请改用 Safari，并确认 PayPal Live 已注册 shop.duojiayi.com。"
+                    : "支付失败。Apple Pay 请用 Safari；Google Pay 请用 Chrome，并确认 PayPal 后台已启用对应支付方式。"
                 );
                 setStarted(false);
               }}

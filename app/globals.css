@@ -688,6 +688,19 @@ button {
   line-height: 1.7;
 }
 
+.google-pay-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.google-pay-host {
+  min-height: 0;
+}
+
+.google-pay-host > div,
+.google-pay-host > button {
+  width: 100% !important;
+}
+
 /* About / contact */
 .prose {
   max-width: 42rem;
