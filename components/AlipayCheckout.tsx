@@ -61,7 +61,7 @@ export default function AlipayCheckout({
           : `支付宝 · ¥${price.toFixed(2)}`}
       </button>
       <p className="checkout-hint alipay-hint">
-        网页沙箱收款「{productName}」· 金额按人民币元计 · 需沙箱账号/钱包
+        支付宝网页收款「{productName}」· 金额按人民币元计
       </p>
       {error ? <p className="paypal-error">{error}</p> : null}
     </div>

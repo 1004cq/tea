@@ -4,7 +4,7 @@ import path from "path";
 
 /**
  * Alipay AI Pay (Vibe Pay / AI 网页应用收款) helpers.
- * Secrets stay server-side. Sandbox gateway is the default for testing.
+ * Secrets stay server-side. Default gateway is production; override AIPAY_GATEWAY for sandbox.
  */
 
 function requireEnv(name: string): string {
@@ -24,7 +24,7 @@ let cachedSdk: AlipaySdk | null = null;
 export function getAlipayGateway(): string {
   return (
     process.env.AIPAY_GATEWAY?.trim() ||
-    "https://openapi-sandbox.dl.alipaydev.com/gateway.do"
+    "https://openapi.alipay.com/gateway.do"
   );
 }
 
