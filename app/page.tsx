@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { products } from "@/lib/products";
+import { siteImages } from "@/lib/images";
 import ProductCard from "@/components/ProductCard";
 
 export default function HomePage() {
@@ -14,12 +15,12 @@ export default function HomePage() {
       <section className="hero">
         <div className="hero-media" aria-hidden="true">
           <Image
-            src="https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=2000&q=80"
+            src={siteImages.hero}
             alt=""
             fill
             priority
             sizes="100vw"
-            style={{ objectFit: "cover" }}
+            style={{ objectFit: "cover", objectPosition: "center 40%" }}
           />
           <div className="hero-overlay" />
         </div>
@@ -46,11 +47,11 @@ export default function HomePage() {
         <div className="container split">
           <div className="split-media">
             <Image
-              src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=1400&q=80"
-              alt="滇红茶汤与茶叶"
+              src={siteImages.story}
+              alt="茶席倾注，热茶升腾"
               fill
               sizes="(max-width: 900px) 100vw, 50vw"
-              style={{ objectFit: "cover" }}
+              style={{ objectFit: "cover", objectPosition: "center 30%" }}
             />
           </div>
           <div className="split-copy">

@@ -20,7 +20,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           src={product.image}
           alt={product.name}
           fill
-          sizes="(max-width: 900px) 100vw, 46vw"
+          sizes="(max-width: 900px) 100vw, 48vw"
           style={{ objectFit: "cover" }}
         />
       </div>

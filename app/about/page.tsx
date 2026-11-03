@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { siteImages } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "关于",
@@ -23,11 +24,11 @@ export default function AboutPage() {
         <div className="container split">
           <div className="split-media">
             <Image
-              src="https://images.unsplash.com/photo-1597318181409-cf64d0b5d8a2?auto=format&fit=crop&w=1400&q=80"
-              alt="茶山与茶园氛围"
+              src={siteImages.about}
+              alt="高山茶园采摘"
               fill
               sizes="(max-width: 900px) 100vw, 50vw"
-              style={{ objectFit: "cover" }}
+              style={{ objectFit: "cover", objectPosition: "center 35%" }}
             />
           </div>
           <div className="split-copy prose">
