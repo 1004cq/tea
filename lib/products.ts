@@ -21,9 +21,9 @@ export const products: Product[] = [
     name: "支付测试（1美分）",
     nameEn: "Payment Test (1¢)",
     price: 0.01,
-    description: "用于 PayPal / Apple Pay 最低金额联调，非正式售卖商品。",
+    description: "用于 PayPal / 支付宝最低金额联调，非正式售卖商品。",
     longDescription:
-      "此商品仅用于验证支付链路能否以 PayPal 支持的最低金额（0.01 USD）完成下单与收款。请勿作为正式茶叶商品售卖。",
+      "此商品仅用于验证支付链路能否以最低金额（0.01 USD / ¥0.01）完成下单与收款。请勿作为正式茶叶商品售卖。",
     image:
       "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=1200&q=80",
     weight: "—",

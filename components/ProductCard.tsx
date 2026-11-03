@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Product } from "@/lib/products";
 import PayPalCheckout from "@/components/PayPalCheckout";
+import AlipayCheckout from "@/components/AlipayCheckout";
 
 type ProductCardProps = {
   product: Product;
@@ -28,6 +29,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <h3>{product.name}</h3>
           <span className="product-price">
             {currency} {product.price.toFixed(2)}
+            <span className="price-cny"> / ¥{product.price.toFixed(2)}</span>
           </span>
         </div>
 
@@ -40,6 +42,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         <p className="product-desc">{product.description}</p>
 
         <PayPalCheckout
+          productId={product.id}
+          productName={product.name}
+          price={product.price}
+        />
+        <AlipayCheckout
           productId={product.id}
           productName={product.name}
           price={product.price}

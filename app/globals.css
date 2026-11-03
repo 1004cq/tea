@@ -158,6 +158,24 @@ button {
   color: var(--color-ink);
 }
 
+.btn-alipay {
+  width: 100%;
+  background: linear-gradient(180deg, #1a9eff 0%, #1677ff 100%);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(22, 119, 255, 0.22);
+}
+
+.btn-alipay:hover {
+  background: linear-gradient(180deg, #3aadff 0%, #1464e0 100%);
+  box-shadow: 0 12px 26px rgba(22, 119, 255, 0.28);
+}
+
+.btn-alipay:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+}
+
 .btn-hero-ghost {
   border-color: rgba(201, 169, 120, 0.65);
   color: var(--color-white);
@@ -699,6 +717,45 @@ button {
 .google-pay-host > div,
 .google-pay-host > button {
   width: 100% !important;
+}
+
+.alipay-checkout {
+  margin-top: 0.85rem;
+  width: 100%;
+}
+
+.alipay-hint {
+  margin-top: 0.55rem;
+  margin-bottom: 0;
+}
+
+.price-cny {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--color-moss);
+  letter-spacing: 0;
+}
+
+.aipay-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1rem;
+  max-width: 32rem;
+  margin: 0 auto 1.75rem;
+  text-align: left;
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}
+
+.aipay-meta dt {
+  font-weight: 600;
+  color: var(--color-leaf);
+}
+
+.aipay-meta dd {
+  word-break: break-all;
 }
 
 /* About / contact */
