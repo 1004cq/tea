@@ -2,16 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { getProductById } from "@/lib/products";
 import {
   appendAlipayEvent,
-  createAlipayPagePayUrl,
+  createAlipayPayUrl,
   createOutTradeNo,
   formatCnyAmount,
   isAlipayConfigured,
+  resolveAlipayPayChannel,
 } from "@/lib/alipay";
 
 /**
  * POST /api/alipay/create-order
- * Body: { productId: string }
- * Creates an Alipay page-pay redirect URL using catalog CNY amount.
+ * Body: { productId: string, channel?: "page" | "wap" | "auto" }
+ * Creates an Alipay redirect URL:
+ * - page → alipay.trade.page.pay (电脑网站支付)
+ * - wap  → alipay.trade.wap.pay  (手机网站支付)
+ * Auto uses the request User-Agent when channel is omitted / "auto".
  */
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +26,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = (await request.json()) as { productId?: string };
+    const body = (await request.json()) as {
+      productId?: string;
+      channel?: string;
+    };
     const productId = body.productId?.trim();
 
     if (!productId) {
@@ -37,16 +44,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    const channel = resolveAlipayPayChannel({
+      requested: body.channel,
+      userAgent: request.headers.get("user-agent"),
+    });
+
     const outTradeNo = createOutTradeNo(product.id);
     const totalAmount = formatCnyAmount(product.price);
     const subject = `${product.name} ${product.nameEn}`.trim();
 
-    const payUrl = createAlipayPagePayUrl({
+    const payUrl = createAlipayPayUrl({
       outTradeNo,
       subject,
       totalAmount,
       body: product.description,
       productId: product.id,
+      channel,
     });
 
     await appendAlipayEvent("create_order", {
@@ -54,6 +67,9 @@ export async function POST(request: NextRequest) {
       productId: product.id,
       totalAmount,
       currency: "CNY",
+      channel,
+      method:
+        channel === "wap" ? "alipay.trade.wap.pay" : "alipay.trade.page.pay",
     });
 
     return NextResponse.json({
@@ -61,6 +77,7 @@ export async function POST(request: NextRequest) {
       payUrl,
       amount: totalAmount,
       currency: "CNY",
+      channel,
     });
   } catch (error) {
     console.error("[alipay/create-order]", error);

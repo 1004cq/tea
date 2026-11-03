@@ -8,8 +8,26 @@ type AlipayCheckoutProps = {
   price: number;
 };
 
+function preferWapCheckout(): boolean {
+  if (typeof window === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const coarse =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(pointer: coarse)").matches;
+  const narrow =
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(max-width: 820px)").matches;
+  const mobileUa =
+    /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile|Opera Mini/i.test(
+      ua
+    );
+  // Prefer WAP on phones / narrow touch devices; keep iPad-ish wide tablets on PC QR.
+  if (/iPad|Tablet/i.test(ua) && !/Mobile/i.test(ua) && !narrow) return false;
+  return mobileUa || (coarse && narrow);
+}
+
 /**
- * Alipay AI Pay (电脑网站支付) — creates a page-pay URL then redirects.
+ * Alipay checkout — PC page pay or mobile wap pay.
  * Amount is charged in CNY using the catalog number as yuan.
  */
 export default function AlipayCheckout({
@@ -35,13 +53,15 @@ export default function AlipayCheckout({
           setError(null);
           setLoading(true);
           try {
+            const channel = preferWapCheckout() ? "wap" : "page";
             const response = await fetch("/api/alipay/create-order", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ productId }),
+              body: JSON.stringify({ productId, channel }),
             });
             const data = (await response.json()) as {
               payUrl?: string;
+              channel?: string;
               error?: string;
             };
             if (!response.ok || !data.payUrl) {
@@ -61,7 +81,7 @@ export default function AlipayCheckout({
           : `支付宝 · ¥${price.toFixed(2)}`}
       </button>
       <p className="checkout-hint alipay-hint">
-        支付宝网页收款「{productName}」· 金额按人民币元计
+        「{productName}」· 手机自动走手机网站支付，电脑走扫码/登录支付
       </p>
       {error ? <p className="paypal-error">{error}</p> : null}
     </div>

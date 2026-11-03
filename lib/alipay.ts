@@ -102,42 +102,95 @@ export function sanitizeAlipaySubject(subject: string): string {
     .slice(0, 256);
 }
 
-export type CreateAlipayPagePayInput = {
+export type AlipayPayChannel = "page" | "wap";
+
+export type CreateAlipayPayInput = {
   outTradeNo: string;
   subject: string;
   /** Amount in CNY yuan, two decimal places. */
   totalAmount: string;
   body?: string;
   productId?: string;
+  /** page = 电脑网站支付; wap = 手机网站支付 */
+  channel?: AlipayPayChannel;
 };
 
+export type CreateAlipayPagePayInput = CreateAlipayPayInput;
+
+function detectChannelFromUserAgent(
+  userAgent: string | null | undefined
+): AlipayPayChannel {
+  const ua = (userAgent || "").toLowerCase();
+  if (!ua) return "page";
+  if (
+    /android|webos|iphone|ipod|blackberry|iemobile|opera mini|mobile|mobile safari|crios|fxios/.test(
+      ua
+    )
+  ) {
+    // iPad often prefers PC QR flow; treat tablets as page unless phone-like.
+    if (/ipad|tablet/.test(ua) && !/mobile/.test(ua)) return "page";
+    return "wap";
+  }
+  return "page";
+}
+
+export function resolveAlipayPayChannel(input: {
+  requested?: string | null;
+  userAgent?: string | null;
+}): AlipayPayChannel {
+  const requested = (input.requested || "").trim().toLowerCase();
+  if (requested === "wap" || requested === "mobile" || requested === "h5") {
+    return "wap";
+  }
+  if (requested === "page" || requested === "pc") {
+    return "page";
+  }
+  return detectChannelFromUserAgent(input.userAgent);
+}
+
 /**
- * Build a browser redirect URL for alipay.trade.page.pay (GET).
- * Client should navigate to the returned URL.
+ * Build a browser redirect URL for PC or mobile Alipay checkout (GET).
+ * - page: alipay.trade.page.pay + FAST_INSTANT_TRADE_PAY
+ * - wap:  alipay.trade.wap.pay  + QUICK_WAP_WAY
  */
+export function createAlipayPayUrl(input: CreateAlipayPayInput): string {
+  const sdk = getAlipaySdk();
+  const channel = input.channel || "page";
+  const method =
+    channel === "wap" ? "alipay.trade.wap.pay" : "alipay.trade.page.pay";
+  const productCode =
+    channel === "wap" ? "QUICK_WAP_WAY" : "FAST_INSTANT_TRADE_PAY";
+
+  const bizContent: Record<string, string | undefined> = {
+    out_trade_no: input.outTradeNo,
+    product_code: productCode,
+    subject: sanitizeAlipaySubject(input.subject),
+    total_amount: input.totalAmount,
+    body: input.body ? sanitizeAlipaySubject(input.body) : undefined,
+    passback_params: input.productId
+      ? encodeURIComponent(input.productId)
+      : undefined,
+  };
+
+  if (channel === "page") {
+    bizContent.qr_pay_mode = "2";
+  } else {
+    // Mid-payment exit back to products (or site root).
+    bizContent.quit_url = `${getAlipayBaseUrl()}/products`;
+  }
+
+  return sdk.pageExecute(method, "GET", {
+    notifyUrl: getAlipayNotifyUrl(),
+    returnUrl: getAlipayReturnUrl(),
+    bizContent,
+  });
+}
+
+/** @deprecated Prefer createAlipayPayUrl({ channel: "page" }) */
 export function createAlipayPagePayUrl(
   input: CreateAlipayPagePayInput
 ): string {
-  const sdk = getAlipaySdk();
-  const url = sdk.pageExecute("alipay.trade.page.pay", "GET", {
-    notifyUrl: getAlipayNotifyUrl(),
-    returnUrl: getAlipayReturnUrl(),
-    bizContent: {
-      out_trade_no: input.outTradeNo,
-      product_code: "FAST_INSTANT_TRADE_PAY",
-      subject: sanitizeAlipaySubject(input.subject),
-      total_amount: input.totalAmount,
-      body: input.body
-        ? sanitizeAlipaySubject(input.body)
-        : undefined,
-      passback_params: input.productId
-        ? encodeURIComponent(input.productId)
-        : undefined,
-      qr_pay_mode: "2",
-    },
-  });
-
-  return url;
+  return createAlipayPayUrl({ ...input, channel: input.channel || "page" });
 }
 
 export function verifyAlipayNotify(
