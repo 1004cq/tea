@@ -1,32 +1,74 @@
 import type { Metadata } from "next";
-import { products } from "@/lib/products";
+import {
+  categoryLabels,
+  getCatalogProducts,
+  getProductById,
+  type ProductCategory,
+} from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
 
 export const metadata: Metadata = {
-  title: "产品",
-  description: "浏览凤庆滇红产品：经典滇红、金芽、陈韵与礼盒。",
+  title: "产品 Products",
+  description:
+    "Browse Fengqing Dianhong: classic, golden needle, aged, and gift set.",
 };
 
+const order: Exclude<ProductCategory, "test">[] = [
+  "daily",
+  "tasting",
+  "gift",
+];
+
 export default function ProductsPage() {
-  const catalog = products.filter((p) => p.id !== "paypal-test-cent");
-  const testSku = products.find((p) => p.id === "paypal-test-cent");
+  const catalog = getCatalogProducts();
+  const testSku = getProductById("paypal-test-cent");
 
   return (
     <section className="section section-page">
       <div className="container">
         <div className="page-hero">
           <p className="eyebrow">Collection</p>
-          <h1>产品</h1>
+          <h1>产品 Products</h1>
           <p className="muted page-lead">
-            四款代表性滇红，覆盖日常品饮、静心品鉴与礼赠。支持 PayPal 与支付宝结账。
+            按场景选茶：日常、品鉴与礼赠。每款标明产地、工艺与口感。
           </p>
+          <p className="page-lead-en" lang="en">
+            Clear grades, origin notes, and bilingual intros — shop with PayPal
+            or Alipay.
+          </p>
+          <ul className="category-rail" aria-label="产品分类">
+            {order.map((key) => (
+              <li key={key}>
+                <a href={`#cat-${key}`}>
+                  {categoryLabels[key].zh}
+                  <span lang="en">{categoryLabels[key].en}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="product-grid">
-          {catalog.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {order.map((key) => {
+          const items = catalog.filter((p) => p.category === key);
+          if (!items.length) return null;
+          return (
+            <div key={key} id={`cat-${key}`} className="catalog-block">
+              <div className="section-head compact">
+                <p className="eyebrow">{categoryLabels[key].en}</p>
+                <h2>{categoryLabels[key].zh}</h2>
+              </div>
+              <div className="product-grid">
+                {items.map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    priority={key === "daily" && index === 0}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
 
         {testSku ? (
           <div className="test-sku-block">
