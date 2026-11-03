@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/auth";
+import CredentialsAuthForm from "@/components/CredentialsAuthForm";
 
 export const metadata: Metadata = {
   title: "登录 Login",
-  description: "Sign in with Google to access your Fengqing Dianhong account.",
+  description: "Sign in with email or Google to view your orders.",
 };
 
 type LoginPageProps = {
@@ -26,9 +28,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const errorMessage =
     params.error === "OAuthAccountNotLinked"
       ? "该邮箱已通过其他方式关联，请使用原登录方式。"
-      : params.error
-        ? "登录失败，请重试。"
-        : null;
+      : params.error === "CredentialsSignin"
+        ? "邮箱或密码错误。"
+        : params.error
+          ? "登录失败，请重试。"
+          : null;
 
   return (
     <section className="section section-page">
@@ -36,11 +40,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <p className="eyebrow">Account</p>
         <h1>登录 Login</h1>
         <p className="muted page-lead">
-          使用 Google 账号登录，进入个人中心查看账户信息。支付仍通过 PayPal /
-          支付宝完成，登录不会改变结账流程。
+          使用邮箱密码或 Google 登录，进入个人中心查看订单。PayPal /
+          支付宝结账流程不变。
         </p>
         <p className="page-lead-en" lang="en">
-          Sign in with Google. PayPal and Alipay checkout stay the same.
+          Email or Google sign-in. Checkout via PayPal / Alipay stays the same.
         </p>
 
         {errorMessage ? (
@@ -48,6 +52,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             {errorMessage}
           </p>
         ) : null}
+
+        <CredentialsAuthForm mode="login" callbackUrl={callbackUrl} />
+
+        <div className="auth-divider">
+          <span>或 or</span>
+        </div>
 
         <form
           action={async () => {
@@ -60,6 +70,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             Continue with Google · 使用 Google 登录
           </button>
         </form>
+
+        <p className="auth-switch muted">
+          还没有账户？{" "}
+          <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
+            注册 Register
+          </Link>
+        </p>
       </div>
     </section>
   );

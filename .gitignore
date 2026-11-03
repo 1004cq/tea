@@ -43,5 +43,12 @@ client_secret*.json
 *.tsbuildinfo
 next-env.d.ts
 
-# runtime payment records and webhook logs
+# runtime payment records, webhook logs, and SQLite DB
 /data/
+*.db
+*.db-journal
+# Prisma may create a root .env with DATABASE_URL only
+.env
+
+/lib/generated/prisma
+prisma/data/

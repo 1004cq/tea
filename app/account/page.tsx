@@ -3,19 +3,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import {
+  formatOrderAmount,
+  listOrdersForUser,
+  orderStatusLabel,
+} from "@/lib/orders";
 
 export const metadata: Metadata = {
   title: "个人中心 Account",
-  description: "Your Fengqing Dianhong account.",
+  description: "Your Fengqing Dianhong account and PayPal orders.",
 };
 
 export default async function AccountPage() {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login?callbackUrl=/account");
   }
 
   const { user } = session;
+  const orders = await listOrdersForUser(user.id!);
 
   return (
     <section className="section section-page">
@@ -24,11 +30,10 @@ export default async function AccountPage() {
           <p className="eyebrow">Account</p>
           <h1>个人中心</h1>
           <p className="muted page-lead">
-            欢迎回来。可在此查看登录信息；选购与结账仍在产品页完成。
+            查看账户信息与 PayPal 支付订单。结账仍在产品页完成。
           </p>
           <p className="page-lead-en" lang="en">
-            Welcome back. Browse and checkout on Products — PayPal / Alipay
-            unchanged.
+            Profile and PayPal orders. Checkout remains on Products.
           </p>
         </div>
 
@@ -55,7 +60,7 @@ export default async function AccountPage() {
                   {user.email}
                 </p>
               ) : null}
-              <p className="account-provider">Signed in with Google</p>
+              <p className="account-provider">Signed in</p>
             </div>
           </div>
 
@@ -85,6 +90,65 @@ export default async function AccountPage() {
               </button>
             </form>
           </div>
+        </div>
+
+        <div className="orders-section">
+          <div className="section-head compact">
+            <p className="eyebrow">Orders</p>
+            <h2>我的订单</h2>
+            <p>登录后可见的 PayPal 支付记录。未登录无法查看。</p>
+          </div>
+
+          {orders.length === 0 ? (
+            <p className="muted orders-empty">
+              暂无订单。登录后在产品页完成 PayPal 支付，成功后会出现在这里。
+            </p>
+          ) : (
+            <div className="orders-table-wrap">
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>订单号</th>
+                    <th>商品</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                    <th>支付时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => {
+                    const status = orderStatusLabel(order.status);
+                    return (
+                      <tr key={order.id}>
+                        <td>
+                          <code className="order-id">{order.paypalOrderId}</code>
+                        </td>
+                        <td>{order.productName}</td>
+                        <td>{formatOrderAmount(order)}</td>
+                        <td>
+                          <span
+                            className={`order-status is-${order.status.toLowerCase()}`}
+                          >
+                            {status.zh}
+                            <span lang="en"> · {status.en}</span>
+                          </span>
+                        </td>
+                        <td>
+                          {order.paidAt
+                            ? new Intl.DateTimeFormat("zh-CN", {
+                                timeZone: "Asia/Shanghai",
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              }).format(order.paidAt)
+                            : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </section>

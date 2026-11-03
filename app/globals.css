@@ -1297,6 +1297,135 @@ button {
   object-fit: cover;
 }
 
+.auth-form {
+  display: grid;
+  gap: 0.95rem;
+  margin-top: 1.5rem;
+  max-width: 26rem;
+}
+
+.auth-field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.auth-field span {
+  font-family: var(--font-english);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.auth-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 252, 249, 0.9);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.auth-field input:focus {
+  outline: none;
+  border-color: var(--color-gold-line);
+  box-shadow: 0 0 0 3px rgba(154, 112, 72, 0.12);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 26rem;
+  margin: 1.5rem 0 1rem;
+  color: var(--color-moss);
+  font-family: var(--font-english);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--color-line);
+}
+
+.auth-switch {
+  margin-top: 1.5rem;
+  font-size: 0.94rem;
+}
+
+.auth-switch a {
+  color: var(--color-tea);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.orders-section {
+  margin-top: 3.5rem;
+}
+
+.orders-empty {
+  padding: 1.25rem 0;
+}
+
+.orders-table-wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--color-line);
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 1rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.orders-table th {
+  font-family: var(--font-english);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+  font-weight: 500;
+}
+
+.order-id {
+  font-size: 0.82rem;
+  word-break: break-all;
+  color: var(--color-leaf);
+}
+
+.order-status {
+  white-space: nowrap;
+}
+
+.order-status.is-paid {
+  color: var(--color-tea);
+}
+
+.order-status.is-pending {
+  color: var(--color-moss);
+}
+
+.order-status span[lang="en"] {
+  color: var(--color-moss);
+  font-family: var(--font-english);
+  font-size: 0.8rem;
+}
+
 /* Motion */
 @keyframes riseIn {
   from {
@@ -1483,6 +1612,16 @@ button {
 
   .account-actions .btn {
     width: 100%;
+  }
+
+  .auth-form,
+  .btn-google {
+    max-width: none;
+  }
+
+  .orders-table th:nth-child(1),
+  .orders-table td:nth-child(1) {
+    min-width: 8rem;
   }
 
   .site-footer {

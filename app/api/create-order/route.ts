@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { CheckoutError, createCatalogOrder, toClientError } from "@/lib/checkout-orders";
 
 export const runtime = "nodejs";
@@ -8,6 +9,7 @@ export const runtime = "nodejs";
  * Body: { productId: string }
  * Creates a PayPal order using the catalog price (never trust client-sent amounts)
  * and records the order id so capture can refuse anything this shop did not create.
+ * When the buyer is signed in, the pending order is linked to their user id.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +22,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await createCatalogOrder(productId);
+    const session = await auth();
+    const userId = session?.user?.id || null;
+    const result = await createCatalogOrder(productId, userId);
     return NextResponse.json(result);
   } catch (error) {
     return jsonError("create-order", error, "创建订单失败");

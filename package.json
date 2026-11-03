@@ -4,22 +4,30 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.8.3",
+    "@prisma/client": "^6.19.3",
     "alipay-sdk": "^4.14.0",
+    "bcryptjs": "^3.0.3",
     "next": "^15.3.1",
     "next-auth": "^5.0.0-beta.32",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "dotenv": "^18.0.9",
+    "prisma": "^6.19.3",
     "typescript": "^5.8.3"
   }
 }

@@ -24,6 +24,11 @@ import {
   saveShopOrder,
   type StoredShopOrder,
 } from "@/lib/paypal-order-store";
+import {
+  createPendingOrder,
+  markOrderPaidByPayPalId,
+  upsertPaidOrderFromPayPal,
+} from "@/lib/orders";
 
 export class CheckoutError extends Error {
   readonly httpStatus: number;
@@ -72,22 +77,49 @@ function expectedFromRecord(record: StoredShopOrder): ExpectedShopOrder | null {
 async function acceptCapture(
   orderID: string,
   order: PayPalOrder,
-  expected: ExpectedShopOrder
+  expected: ExpectedShopOrder,
+  userId?: string | null
 ): Promise<{ status: "COMPLETED"; orderID: string }> {
   const captured = checkPayPalOrderLinkage(order, expected, "captured");
   if (!captured.ok) {
     throw new CheckoutError(409, "支付确认失败", `capture mismatch: ${captured.reason}`);
   }
   await markShopOrderCaptured(orderID);
+  const product = getProductById(expected.productId);
+  try {
+    const marked = await markOrderPaidByPayPalId(orderID, { userId });
+    if (!marked) {
+      await upsertPaidOrderFromPayPal({
+        paypalOrderId: orderID,
+        productId: expected.productId,
+        productName: product
+          ? `${product.name} (${product.nameEn})`
+          : expected.productId,
+        amountCents: expected.amountCents,
+        currency: expected.currency,
+        userId,
+      });
+    }
+  } catch (error) {
+    console.error(
+      "[capture-order] prisma mark paid failed",
+      error instanceof Error ? error.message : "unknown error"
+    );
+  }
   console.info("[capture-order]", {
     orderID,
     productId: expected.productId,
+    productName: product?.name,
     status: "COMPLETED",
+    userId: userId || null,
   });
   return { status: "COMPLETED", orderID };
 }
 
-export async function createCatalogOrder(productId: string): Promise<{ orderID: string }> {
+export async function createCatalogOrder(
+  productId: string,
+  userId?: string | null
+): Promise<{ orderID: string }> {
   const id = productId.trim();
   if (!id) {
     throw new CheckoutError(400, "productId is required", "missing productId");
@@ -153,12 +185,34 @@ export async function createCatalogOrder(productId: string): Promise<{ orderID: 
     status: "pending",
   });
 
-  console.info("[create-order]", { orderID: order.id, productId: product.id });
+  try {
+    await createPendingOrder({
+      paypalOrderId: order.id,
+      productId: product.id,
+      productName: `${product.name} (${product.nameEn})`,
+      amountCents,
+      currency,
+      customId,
+      userId: userId || null,
+    });
+  } catch (error) {
+    console.error(
+      "[create-order] prisma pending order failed",
+      error instanceof Error ? error.message : "unknown error"
+    );
+  }
+
+  console.info("[create-order]", {
+    orderID: order.id,
+    productId: product.id,
+    userId: userId || null,
+  });
   return { orderID: order.id };
 }
 
 export async function captureCatalogOrder(
-  orderID: string
+  orderID: string,
+  userId?: string | null
 ): Promise<{ status: "COMPLETED"; orderID: string }> {
   const id = orderID.trim();
   if (!id) {
@@ -184,6 +238,11 @@ export async function captureCatalogOrder(
   }
 
   if (record.status === "captured") {
+    try {
+      await markOrderPaidByPayPalId(id, { userId });
+    } catch {
+      /* ignore */
+    }
     return { status: "COMPLETED", orderID: id };
   }
 
@@ -191,7 +250,7 @@ export async function captureCatalogOrder(
   const remoteStatus = typeof remote.status === "string" ? remote.status : "";
 
   if (remoteStatus === "COMPLETED") {
-    return acceptCapture(id, remote, expected);
+    return acceptCapture(id, remote, expected, userId);
   }
 
   const recorded = checkPayPalOrderLinkage(remote, expected, "recorded");
@@ -205,7 +264,7 @@ export async function captureCatalogOrder(
 
   try {
     const capture = await capturePayPalOrder(id);
-    return await acceptCapture(id, capture, expected);
+    return await acceptCapture(id, capture, expected, userId);
   } catch (error) {
     if (error instanceof CheckoutError) throw error;
     console.error(
@@ -215,7 +274,7 @@ export async function captureCatalogOrder(
     try {
       const reread = await getPayPalOrder(id);
       if (reread.status === "COMPLETED") {
-        return await acceptCapture(id, reread, expected);
+        return await acceptCapture(id, reread, expected, userId);
       }
     } catch (rereadError) {
       if (rereadError instanceof CheckoutError) throw rereadError;

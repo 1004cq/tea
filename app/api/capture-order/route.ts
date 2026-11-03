@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import { CheckoutError, captureCatalogOrder, toClientError } from "@/lib/checkout-orders";
 
 export const runtime = "nodejs";
@@ -8,7 +9,7 @@ export const runtime = "nodejs";
  * Body: { orderID: string }
  * Captures a PayPal order only when this shop created it and the approved
  * amount and line items still match the catalog price recorded for it.
- * The JSON body is only `{ status, orderID }` — never the PayPal payload.
+ * On success, persists a PAID order row (linked to the signed-in user when present).
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +19,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "orderID is required" }, { status: 400 });
     }
 
-    const result = await captureCatalogOrder(orderID);
+    const session = await auth();
+    const userId = session?.user?.id || null;
+    const result = await captureCatalogOrder(orderID, userId);
     return NextResponse.json(result);
   } catch (error) {
     return jsonError("capture-order", error, "支付确认失败");
