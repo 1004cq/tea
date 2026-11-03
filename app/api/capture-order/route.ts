@@ -1,60 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
-import { capturePayPalOrder } from "@/lib/paypal";
+import { CheckoutError, captureCatalogOrder, toClientError } from "@/lib/checkout-orders";
+
+export const runtime = "nodejs";
 
 /**
  * POST /api/capture-order
  * Body: { orderID: string }
- * Captures payment after the buyer approves in PayPal.
+ * Captures a PayPal order only when this shop created it and the approved
+ * amount and line items still match the catalog price recorded for it.
+ * The JSON body is only `{ status, orderID }` — never the PayPal payload.
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { orderID?: string };
-    const orderID = body.orderID?.trim();
-
+    const body = await readJson(request);
+    const orderID = readString(body, "orderID");
     if (!orderID) {
-      return NextResponse.json(
-        { error: "orderID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "orderID is required" }, { status: 400 });
     }
 
-    const capture = await capturePayPalOrder(orderID);
-    const status =
-      typeof capture.status === "string" ? capture.status : "UNKNOWN";
-
-    // Prefer capture unit status when present
-    const units = Array.isArray(capture.purchase_units)
-      ? capture.purchase_units
-      : [];
-    const captures = units.flatMap((unit) => {
-      if (!unit || typeof unit !== "object") return [];
-      const payments = (unit as { payments?: { captures?: unknown } }).payments;
-      return Array.isArray(payments?.captures) ? payments.captures : [];
-    }) as Array<{ id?: string; status?: string; amount?: unknown }>;
-
-    const captureStatuses = captures.map((c) => c.status || "UNKNOWN");
-    console.info("[capture-order]", {
-      orderID,
-      orderStatus: status,
-      captureStatuses,
-      captureIds: captures.map((c) => c.id).filter(Boolean),
-    });
-
-    if (status !== "COMPLETED" && !captureStatuses.includes("COMPLETED")) {
-      return NextResponse.json(
-        {
-          error: `支付未完成（状态：${status}）`,
-          capture,
-        },
-        { status: 402 }
-      );
-    }
-
-    return NextResponse.json({ capture, status });
+    const result = await captureCatalogOrder(orderID);
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("[capture-order]", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to capture PayPal order";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return jsonError("capture-order", error, "支付确认失败");
   }
+}
+
+async function readJson(request: NextRequest): Promise<unknown> {
+  try {
+    return await request.json();
+  } catch {
+    throw new CheckoutError(400, "Invalid request", "invalid json");
+  }
+}
+
+function readString(body: unknown, key: string): string | null {
+  if (!body || typeof body !== "object") return null;
+  const value = (body as Record<string, unknown>)[key];
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function jsonError(scope: string, error: unknown, fallback: string) {
+  const client = toClientError(error, fallback);
+  if (client.status !== 400) {
+    console.error(`[${scope}]`, client.log);
+  }
+  return NextResponse.json({ error: client.error }, { status: client.status });
 }

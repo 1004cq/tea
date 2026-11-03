@@ -58,10 +58,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true, verified });
   } catch (error) {
-    console.error("[paypal-webhook]", error);
-    const message =
-      error instanceof Error ? error.message : "Webhook handling failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error(
+      "[paypal-webhook]",
+      error instanceof Error ? error.message : "unknown error"
+    );
+    return NextResponse.json({ error: "Webhook handling failed" }, { status: 500 });
   }
 }
 

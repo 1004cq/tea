@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProductById } from "@/lib/products";
-import { createPayPalOrder, getPayPalCurrency } from "@/lib/paypal";
+import { CheckoutError, createCatalogOrder, toClientError } from "@/lib/checkout-orders";
+
+export const runtime = "nodejs";
 
 /**
  * POST /api/create-order
  * Body: { productId: string }
- * Creates a PayPal order using the catalog price (never trust client-sent amounts).
+ * Creates a PayPal order using the catalog price (never trust client-sent amounts)
+ * and records the order id so capture can refuse anything this shop did not create.
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = (await request.json()) as { productId?: string };
-    const productId = body.productId?.trim();
-
+    const body = await readJson(request);
+    const productId = readString(body, "productId");
     if (!productId) {
       return NextResponse.json(
         { error: "productId is required" },
@@ -19,24 +20,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const product = getProductById(productId);
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
-
-    const currency = getPayPalCurrency();
-    const order = await createPayPalOrder({
-      productId: product.id,
-      productName: `${product.name} (${product.nameEn})`,
-      amount: product.price,
-      currency,
-    });
-
-    return NextResponse.json({ orderID: order.id });
+    const result = await createCatalogOrder(productId);
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("[create-order]", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to create PayPal order";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return jsonError("create-order", error, "创建订单失败");
   }
+}
+
+async function readJson(request: NextRequest): Promise<unknown> {
+  try {
+    return await request.json();
+  } catch {
+    throw new CheckoutError(400, "Invalid request", "invalid json");
+  }
+}
+
+function readString(body: unknown, key: string): string | null {
+  if (!body || typeof body !== "object") return null;
+  const value = (body as Record<string, unknown>)[key];
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function jsonError(scope: string, error: unknown, fallback: string) {
+  const client = toClientError(error, fallback);
+  if (client.status !== 400) {
+    console.error(`[${scope}]`, client.log);
+  }
+  return NextResponse.json({ error: client.error }, { status: client.status });
 }

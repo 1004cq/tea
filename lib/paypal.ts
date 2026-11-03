@@ -1,7 +1,10 @@
 /**
  * Server-side PayPal helpers.
  * Secret stays on the server — never import this module from Client Components.
+ * HTTP error bodies are logged here and are not included on thrown Error messages.
  */
+
+import { centsToPayPalValue, isPayPalOrderId } from "@/lib/paypal-order-guard";
 
 const PAYPAL_MODE = process.env.PAYPAL_MODE === "live" ? "live" : "sandbox";
 
@@ -20,6 +23,68 @@ function getPayPalClientId(): string {
     process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
     ""
   ).trim();
+}
+
+const REDACTED_LOG_KEYS = new Set([
+  "payer",
+  "payment_source",
+  "email_address",
+  "email",
+  "phone",
+  "phone_number",
+  "national_number",
+  "given_name",
+  "surname",
+  "full_name",
+  "address",
+  "shipping",
+  "account_id",
+  "payer_id",
+]);
+
+function redactForLog(body: string): string {
+  const clipped = body.length > 4000 ? `${body.slice(0, 4000)}…` : body;
+  try {
+    return JSON.stringify(redactValue(JSON.parse(clipped) as unknown));
+  } catch {
+    return clipped.replace(
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+      "[redacted-email]"
+    );
+  }
+}
+
+function redactValue(value: unknown): unknown {
+  if (typeof value === "string") {
+    return value.replace(
+      /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+      "[redacted-email]"
+    );
+  }
+  if (Array.isArray(value)) return value.map(redactValue);
+  if (!value || typeof value !== "object") return value;
+  const output: Record<string, unknown> = {};
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    output[key] = REDACTED_LOG_KEYS.has(key) ? "[redacted]" : redactValue(child);
+  }
+  return output;
+}
+
+async function throwPayPalHttpError(
+  response: Response,
+  operation: string
+): Promise<never> {
+  let body = "";
+  try {
+    body = await response.text();
+  } catch {
+    body = "";
+  }
+  console.error(`[paypal] ${operation} failed`, {
+    status: response.status,
+    body: redactForLog(body),
+  });
+  throw new Error("PayPal request failed");
 }
 
 /** OAuth2 client-credentials access token */
@@ -46,27 +111,52 @@ export async function getPayPalAccessToken(): Promise<string> {
   });
 
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`PayPal auth failed (${response.status}): ${detail}`);
+    await throwPayPalHttpError(response, "auth");
   }
 
-  const data = (await response.json()) as { access_token: string };
+  const data = (await response.json()) as { access_token?: unknown };
+  if (typeof data.access_token !== "string" || !data.access_token) {
+    throw new Error("PayPal request failed");
+  }
   return data.access_token;
 }
 
 export type CreateOrderPayload = {
   productId: string;
   productName: string;
-  amount: number;
+  amountCents: number;
   currency: string;
+  customId: string;
 };
 
-/** Create a PayPal checkout order for a single product */
+export type PayPalOrder = {
+  id?: string;
+  status?: string;
+  intent?: string;
+  purchase_units?: unknown;
+};
+
+function payPalLabel(value: string): string {
+  const trimmed = value.trim();
+  return trimmed.length > 127 ? trimmed.slice(0, 127) : trimmed;
+}
+
+/** Create a PayPal checkout order for a single catalog line. */
 export async function createPayPalOrder(
   payload: CreateOrderPayload
-): Promise<{ id: string }> {
+): Promise<PayPalOrder> {
+  if (
+    !Number.isSafeInteger(payload.amountCents) ||
+    payload.amountCents <= 0 ||
+    !/^[A-Z]{3}$/.test(payload.currency) ||
+    !/^[a-f0-9]{32}$/.test(payload.customId)
+  ) {
+    throw new Error("Invalid PayPal order payload");
+  }
+
   const accessToken = await getPayPalAccessToken();
-  const amountValue = payload.amount.toFixed(2);
+  const amountValue = centsToPayPalValue(payload.amountCents);
+  const label = payPalLabel(payload.productName);
 
   const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
     method: "POST",
@@ -79,11 +169,29 @@ export async function createPayPalOrder(
       purchase_units: [
         {
           reference_id: payload.productId,
-          description: payload.productName,
+          custom_id: payload.customId,
+          description: label,
           amount: {
             currency_code: payload.currency,
             value: amountValue,
+            breakdown: {
+              item_total: {
+                currency_code: payload.currency,
+                value: amountValue,
+              },
+            },
           },
+          items: [
+            {
+              name: label,
+              sku: payload.productId,
+              quantity: "1",
+              unit_amount: {
+                currency_code: payload.currency,
+                value: amountValue,
+              },
+            },
+          ],
         },
       ],
       application_context: {
@@ -96,37 +204,55 @@ export async function createPayPalOrder(
   });
 
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`PayPal create order failed (${response.status}): ${detail}`);
+    await throwPayPalHttpError(response, "create order");
   }
 
-  return (await response.json()) as { id: string };
+  return (await response.json()) as PayPalOrder;
 }
 
-/** Capture an approved PayPal order */
-export async function capturePayPalOrder(
-  orderId: string
-): Promise<Record<string, unknown>> {
-  const accessToken = await getPayPalAccessToken();
+function paypalOrderUrl(orderId: string): string {
+  if (!isPayPalOrderId(orderId)) {
+    throw new Error("Invalid PayPal order id");
+  }
+  return `${PAYPAL_API_BASE}/v2/checkout/orders/${encodeURIComponent(orderId)}`;
+}
 
-  const response = await fetch(
-    `${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    }
-  );
+/** Read an order back before capture so amount and line items can be checked. */
+export async function getPayPalOrder(orderId: string): Promise<PayPalOrder> {
+  const accessToken = await getPayPalAccessToken();
+  const response = await fetch(paypalOrderUrl(orderId), {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
 
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`PayPal capture failed (${response.status}): ${detail}`);
+    await throwPayPalHttpError(response, "get order");
   }
 
-  return (await response.json()) as Record<string, unknown>;
+  return (await response.json()) as PayPalOrder;
+}
+
+/** Capture an approved PayPal order. The thrown message never includes the response body. */
+export async function capturePayPalOrder(orderId: string): Promise<PayPalOrder> {
+  const accessToken = await getPayPalAccessToken();
+  const response = await fetch(`${paypalOrderUrl(orderId)}/capture`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    await throwPayPalHttpError(response, "capture");
+  }
+
+  return (await response.json()) as PayPalOrder;
 }
 
 /** Verify a PayPal webhook signature (server-side). */
@@ -173,8 +299,7 @@ export async function verifyPayPalWebhook(params: {
   );
 
   if (!response.ok) {
-    const detail = await response.text();
-    throw new Error(`PayPal webhook verify failed (${response.status}): ${detail}`);
+    await throwPayPalHttpError(response, "webhook verify");
   }
 
   const data = (await response.json()) as { verification_status?: string };
