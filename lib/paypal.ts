@@ -163,6 +163,9 @@ export async function createPayPalOrder(
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
+      // Without this, PayPal returns only {id,status,links} and our
+      // purchase_units linkage check rejects the order as a mismatch.
+      Prefer: "return=representation",
     },
     body: JSON.stringify({
       intent: "CAPTURE",
