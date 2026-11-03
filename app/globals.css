@@ -1,3 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dian-ink: #1a120b;
+  --color-dian-gold: #c9a227;
+  --color-dian-red: #8b3a3a;
+  --color-dian-cream: #f5efe6;
+  --font-display-sc: var(--font-noto-serif);
+  --font-body-sc: var(--font-noto-sans);
+  --font-editorial: var(--font-cormorant);
+}
+
+/* Shop routes keep the lighter editorial theme */
+.shop-shell {
+  min-height: 100vh;
+  color: var(--color-ink);
+  background:
+    radial-gradient(ellipse 65% 40% at 0% 0%, rgba(154, 112, 72, 0.09), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 100% 5%, rgba(74, 52, 40, 0.05), transparent 50%),
+    linear-gradient(180deg, var(--color-paper) 0%, var(--color-rice) 48%, var(--color-cream) 100%);
+}
+
 :root {
   /* Tea-brown · rice · deep ink — modern independent shop */
   --color-ink: #1c1410;
@@ -45,15 +67,14 @@ html {
 body {
   min-height: 100vh;
   font-family: var(--font-body);
-  color: var(--color-ink);
-  background:
-    radial-gradient(ellipse 65% 40% at 0% 0%, rgba(154, 112, 72, 0.09), transparent 55%),
-    radial-gradient(ellipse 50% 35% at 100% 5%, rgba(74, 52, 40, 0.05), transparent 50%),
-    linear-gradient(180deg, var(--color-paper) 0%, var(--color-rice) 48%, var(--color-cream) 100%);
   line-height: 1.75;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+.landing-root {
+  font-family: var(--font-body);
 }
 
 a {
