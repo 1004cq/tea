@@ -43,7 +43,7 @@ export default function Footer() {
 
       <div className="container footer-bottom">
         <span>© {year} 凤庆滇红</span>
-        <span>Payments secured by PayPal</span>
+        <span>PayPal · 支付宝</span>
       </div>
     </footer>
   );

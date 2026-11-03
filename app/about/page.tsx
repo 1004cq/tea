@@ -9,17 +9,17 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <section className="section" style={{ paddingTop: "3rem", paddingBottom: "2rem" }}>
+      <section className="section section-page">
         <div className="container page-hero">
           <p className="eyebrow">About</p>
           <h1>关于凤庆滇红</h1>
-          <p className="muted" style={{ maxWidth: "38rem" }}>
+          <p className="muted page-lead">
             滇红产自云南，凤庆是其重要产地之一。我们以工夫红茶工艺，呈现高山茶的蜜香与醇厚。
           </p>
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 0 }}>
+      <section className="section section-tight">
         <div className="container split">
           <div className="split-media">
             <Image
@@ -45,14 +45,14 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <section className="section" style={{ paddingTop: 0 }}>
+      <section className="section section-tight">
         <div className="container">
           <div className="section-head">
             <p className="eyebrow">Craft</p>
             <h2>品牌故事</h2>
             <p>
-              从茶园到杯中，我们坚持小批量精制，拒绝过度炒作。每一款产品标注等级与净重，
-              价格与品质对应，方便您按场景选择——日常、品鉴或礼赠。
+              从茶园到杯中，我们坚持小批量精制。每一款产品标注等级与净重，
+              方便按日常、品鉴或礼赠选择。
             </p>
           </div>
           <div className="prose">

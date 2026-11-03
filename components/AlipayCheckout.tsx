@@ -47,8 +47,9 @@ export default function AlipayCheckout({
     <div className="alipay-checkout">
       <button
         type="button"
-        className="btn btn-alipay"
+        className="btn btn-alipay btn-checkout"
         disabled={loading}
+        aria-label={`支付宝购买 ${productName}`}
         onClick={async () => {
           setError(null);
           setLoading(true);
@@ -80,9 +81,6 @@ export default function AlipayCheckout({
           ? "正在跳转支付宝…"
           : `支付宝 · ¥${price.toFixed(2)}`}
       </button>
-      <p className="checkout-hint alipay-hint">
-        「{productName}」· 手机自动走手机网站支付，电脑走扫码/登录支付
-      </p>
       {error ? <p className="paypal-error">{error}</p> : null}
     </div>
   );

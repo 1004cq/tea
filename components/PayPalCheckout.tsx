@@ -69,19 +69,18 @@ export default function PayPalCheckout({
       {!started ? (
         <button
           type="button"
-          className="btn btn-primary"
+          className="btn btn-primary btn-checkout"
           onClick={() => {
             setError(null);
             setStarted(true);
           }}
         >
-          购买 · {currency} {price.toFixed(2)}
+          PayPal · {currency} {price.toFixed(2)}
         </button>
       ) : (
         <>
           <p className="checkout-hint">
-            正在为「{productName}」唤起支付… Apple Pay 请用 Safari；Google Pay
-            请用 Chrome，并在 PayPal Live 应用中勾选 Google Pay。
+            「{productName}」· Apple Pay 请用 Safari，Google Pay 请用 Chrome
           </p>
           <PayPalScriptProvider options={options}>
             <GooglePayButton
@@ -96,6 +95,7 @@ export default function PayPalCheckout({
                 color: "gold",
                 shape: "rect",
                 label: "pay",
+                height: 48,
               }}
               createOrder={async () => {
                 setError(null);
@@ -139,7 +139,7 @@ export default function PayPalCheckout({
                 setError(
                   detail
                     ? `支付失败：${detail}`
-                    : "支付失败。Apple Pay 请用 Safari；Google Pay 请用 Chrome，并确认 PayPal 后台已启用对应支付方式。"
+                    : "支付失败。Apple Pay 请用 Safari；Google Pay 请用 Chrome。"
                 );
                 setStarted(false);
               }}
