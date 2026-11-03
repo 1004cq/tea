@@ -90,7 +90,7 @@ export default async function AlipayReturnPage({
         queryAmount: readAlipayString(query, "totalAmount", "total_amount"),
         signedAmount: flat.total_amount,
         catalogAmount: candidate
-          ? formatCnyAmount(candidate.price)
+          ? formatCnyAmount(candidate.priceCny)
           : undefined,
       });
       paid = assessment.paid;

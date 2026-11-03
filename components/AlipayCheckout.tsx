@@ -28,7 +28,7 @@ function preferWapCheckout(): boolean {
 
 /**
  * Alipay checkout — PC page pay or mobile wap pay.
- * Amount is charged in CNY using the catalog number as yuan.
+ * `price` is the CNY catalog amount (product.priceCny), not the USD price.
  */
 export default function AlipayCheckout({
   productId,

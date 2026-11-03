@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     });
 
     const outTradeNo = createOutTradeNo(product.id);
-    const totalAmount = formatCnyAmount(product.price);
+    const totalAmount = formatCnyAmount(product.priceCny);
     const subject = `${product.name} ${product.nameEn}`.trim();
 
     const payUrl = createAlipayPayUrl({

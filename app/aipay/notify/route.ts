@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   appendAlipayEvent,
   capAlipayLogField,
+  formatCnyAmount,
   isAlipayConfigured,
   queryAlipayTrade,
   tryAppendAlipayEvent,
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
       audit: tryAppendAlipayEvent,
       catalogAmount: (productId) => {
         const product = getProductById(productId);
-        return product ? product.price.toFixed(2) : undefined;
+        return product ? formatCnyAmount(product.priceCny) : undefined;
       },
     });
     return new NextResponse(outcome.body, {

@@ -52,7 +52,7 @@ export default function ProductCard({
             <span className="price-main">
               {currency} {product.price.toFixed(2)}
             </span>
-            <span className="price-cny">¥{product.price.toFixed(2)}</span>
+            <span className="price-cny">¥{product.priceCny.toFixed(2)}</span>
           </div>
         </div>
 
@@ -107,7 +107,7 @@ export default function ProductCard({
           <AlipayCheckout
             productId={product.id}
             productName={product.name}
-            price={product.price}
+            price={product.priceCny}
           />
         </div>
       </div>

@@ -1,6 +1,7 @@
 /**
  * Product catalog for the tea shop.
- * Prices are in the configured checkout currency (default USD).
+ * `price` is PayPal checkout currency (default USD).
+ * `priceCny` is the Alipay charge in yuan — set independently, not 1:1 with USD.
  */
 
 import { productImages } from "@/lib/images";
@@ -11,7 +12,10 @@ export type Product = {
   id: string;
   name: string;
   nameEn: string;
+  /** PayPal / USD catalog amount */
   price: number;
+  /** Alipay catalog amount in CNY */
+  priceCny: number;
   description: string;
   descriptionEn: string;
   longDescription: string;
@@ -42,6 +46,7 @@ export const products: Product[] = [
     name: "支付测试（1美分）",
     nameEn: "Payment Test (1¢)",
     price: 0.01,
+    priceCny: 0.01,
     description: "用于 PayPal / 支付宝最低金额联调，非正式售卖商品。",
     descriptionEn: "Checkout smoke test only — not for sale.",
     longDescription:
@@ -62,6 +67,7 @@ export const products: Product[] = [
     name: "经典滇红",
     nameEn: "Classic Dianhong",
     price: 28,
+    priceCny: 198,
     description: "凤庆高山红茶，汤色红亮，蜜香甘醇，日常品饮首选。",
     descriptionEn:
       "Highland Yunnan black tea with bright liquor and honeyed sweetness — everyday cup.",
@@ -83,6 +89,7 @@ export const products: Product[] = [
     name: "金芽滇红",
     nameEn: "Golden Needle",
     price: 48,
+    priceCny: 338,
     description: "全芽精制，金毫显露，蜜香浓郁，适合静心品鉴。",
     descriptionEn:
       "Single-bud pick with golden tips and lifted honey aroma — for slow tasting.",
@@ -104,6 +111,7 @@ export const products: Product[] = [
     name: "陈韵滇红",
     nameEn: "Aged Dianhong",
     price: 68,
+    priceCny: 478,
     description: "窖藏三年，陈香温润，汤感厚实，适合慢饮收藏。",
     descriptionEn:
       "Three-year cellar aging for a warmer, deeper cup — slow sipping and keeping.",
@@ -125,6 +133,7 @@ export const products: Product[] = [
     name: "凤庆礼盒",
     nameEn: "Fengqing Gift Set",
     price: 98,
+    priceCny: 688,
     description: "经典与金芽双拼礼盒，礼赠自饮两相宜。",
     descriptionEn:
       "Classic + Golden Needle duo — ready for gifting or shared tasting.",
