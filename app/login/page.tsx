@@ -30,9 +30,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? "该邮箱已通过其他方式关联，请使用原登录方式。"
       : params.error === "CredentialsSignin"
         ? "邮箱或密码错误。"
-        : params.error
-          ? "登录失败，请重试。"
-          : null;
+        : params.error === "Configuration"
+          ? "登录服务配置异常，请改用邮箱登录，或稍后重试 Google。"
+          : params.error
+            ? "登录失败，请重试。"
+            : null;
 
   return (
     <section className="section section-page">

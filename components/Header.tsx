@@ -18,6 +18,7 @@ export default function Header() {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
   const user = session?.user;
+  const signedIn = status === "authenticated" && !!user;
 
   return (
     <header className="site-header">
@@ -26,16 +27,6 @@ export default function Header() {
           <span className="brand-mark">凤庆滇红</span>
           <span className="brand-sub">Fengqing Dianhong</span>
         </Link>
-
-        <button
-          type="button"
-          className="nav-toggle"
-          aria-expanded={open}
-          aria-label="切换导航"
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span />
-        </button>
 
         <ul className={`nav-links${open ? " open" : ""}`}>
           {links.map((link) => (
@@ -49,39 +40,49 @@ export default function Header() {
               </Link>
             </li>
           ))}
-          <li className="nav-auth">
-            {status === "loading" ? (
-              <span className="nav-auth-placeholder">…</span>
-            ) : user ? (
-              <Link
-                href="/account"
-                className="nav-account"
-                aria-current={pathname === "/account" ? "page" : undefined}
-                onClick={() => setOpen(false)}
-              >
-                {user.image ? (
-                  <Image
-                    src={user.image}
-                    alt=""
-                    width={22}
-                    height={22}
-                    className="nav-avatar"
-                    unoptimized
-                  />
-                ) : null}
-                <span>个人中心</span>
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                aria-current={pathname === "/login" ? "page" : undefined}
-                onClick={() => setOpen(false)}
-              >
-                登录
-              </Link>
-            )}
-          </li>
         </ul>
+
+        <div className="nav-trailing">
+          {signedIn ? (
+            <Link
+              href="/account"
+              className="nav-auth-link nav-account"
+              aria-current={pathname === "/account" ? "page" : undefined}
+              onClick={() => setOpen(false)}
+            >
+              {user.image ? (
+                <Image
+                  src={user.image}
+                  alt=""
+                  width={22}
+                  height={22}
+                  className="nav-avatar"
+                  unoptimized
+                />
+              ) : null}
+              <span>个人中心</span>
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="nav-auth-link"
+              aria-current={pathname === "/login" ? "page" : undefined}
+              onClick={() => setOpen(false)}
+            >
+              登录
+            </Link>
+          )}
+
+          <button
+            type="button"
+            className="nav-toggle"
+            aria-expanded={open}
+            aria-label="切换导航"
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span />
+          </button>
+        </div>
       </div>
     </header>
   );

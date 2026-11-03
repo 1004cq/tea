@@ -29,6 +29,7 @@ export default function Footer() {
               <Link href="/contact">联系</Link>
             </li>
             <li>
+              <Link href="/login">登录</Link>
               <Link href="/account">个人中心</Link>
             </li>
           </ul>
