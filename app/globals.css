@@ -16,9 +16,10 @@
   --color-muted: #7a6b60;
   --color-line: rgba(28, 20, 16, 0.1);
 
-  --font-display: "Noto Serif SC", "Source Han Serif SC", "Songti SC", serif;
-  --font-english: "Playfair Display", "Noto Serif", Georgia, serif;
-  --font-body: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB",
+  --font-display: var(--font-noto-serif), "Source Han Serif SC", "Songti SC",
+    serif;
+  --font-english: var(--font-playfair), "Noto Serif", Georgia, serif;
+  --font-body: var(--font-noto-sans), "PingFang SC", "Hiragino Sans GB",
     "Microsoft YaHei", sans-serif;
 
   --max-width: 1140px;
@@ -26,7 +27,6 @@
   --radius: 10px;
   --radius-sm: 6px;
   --shadow-soft: 0 10px 30px rgba(28, 20, 16, 0.06);
-  --shadow-hover: 0 18px 40px rgba(28, 20, 16, 0.1);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -80,13 +80,6 @@ button {
 }
 
 /* Typography */
-.display {
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: 0.1em;
-  line-height: 1.28;
-}
-
 .eyebrow {
   font-family: var(--font-english);
   font-size: 0.78rem;
@@ -478,22 +471,17 @@ button {
   z-index: 1;
   width: min(100% - 2.75rem, var(--max-width));
   margin: 0 auto 12vh;
-  max-width: 36rem;
+  max-width: 34rem;
   animation: riseIn 1.05s var(--ease) both;
-}
-
-.hero-content .eyebrow {
-  color: var(--color-gold-soft);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
 }
 
 .hero-brand {
   font-family: var(--font-display);
-  font-size: clamp(3rem, 8vw, 5.1rem);
+  font-size: clamp(3.2rem, 9vw, 5.4rem);
   font-weight: 600;
   letter-spacing: 0.22em;
   line-height: 1.08;
-  margin: 1.15rem 0 0.35rem;
+  margin: 0 0 0.45rem;
   text-shadow: 0 10px 40px rgba(0, 0, 0, 0.28);
 }
 
@@ -504,27 +492,16 @@ button {
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: rgba(255, 252, 247, 0.78);
-  margin-bottom: 1.35rem;
+  margin-bottom: 1.15rem;
 }
 
 .hero-text {
-  max-width: 28rem;
+  max-width: 26rem;
   color: rgba(255, 252, 247, 0.9);
-  margin-bottom: 0.65rem;
+  margin-bottom: 2rem;
   font-size: 1.08rem;
   line-height: 1.9;
   font-weight: 300;
-}
-
-.hero-text-en {
-  max-width: 28rem;
-  margin-bottom: 2.15rem;
-  font-family: var(--font-english);
-  font-size: 0.92rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  line-height: 1.7;
-  color: rgba(255, 252, 247, 0.68);
 }
 
 .hero-actions {
@@ -549,15 +526,6 @@ button {
   padding: 0.25rem 0;
   border-top: 1px solid var(--color-gold-line);
   padding-top: 1.35rem;
-  animation: riseIn 0.85s var(--ease) both;
-}
-
-.pillar:nth-child(2) {
-  animation-delay: 0.08s;
-}
-
-.pillar:nth-child(3) {
-  animation-delay: 0.16s;
 }
 
 .pillar h2 {
@@ -628,7 +596,6 @@ button {
 .section-head {
   max-width: 34rem;
   margin-bottom: 2.75rem;
-  animation: riseIn 0.8s var(--ease) both;
 }
 
 .section-head.compact {
@@ -726,7 +693,7 @@ button {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  animation: riseIn 0.9s var(--ease) both;
+  scroll-margin-top: calc(var(--nav-height) + 1.25rem);
 }
 
 .product-item:first-child {
@@ -739,18 +706,6 @@ button {
 
 .product-item.is-test {
   opacity: 0.96;
-}
-
-.product-item:nth-child(2) {
-  animation-delay: 0.06s;
-}
-
-.product-item:nth-child(3) {
-  animation-delay: 0.12s;
-}
-
-.product-item:nth-child(4) {
-  animation-delay: 0.18s;
 }
 
 .product-image {
@@ -937,10 +892,8 @@ button {
 }
 
 .purchase-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
+  display: grid;
+  gap: 0.35rem;
 }
 
 .purchase-label {
@@ -951,12 +904,11 @@ button {
   color: var(--color-gold);
 }
 
-.purchase-price-inline {
-  font-family: var(--font-english);
-  font-size: 1.15rem;
-  font-weight: 600;
+.purchase-hint {
+  font-size: 0.78rem;
+  color: var(--color-moss);
   letter-spacing: 0.04em;
-  color: var(--color-tea);
+  line-height: 1.5;
 }
 
 .test-sku-block {
@@ -1106,17 +1058,23 @@ button {
 .category-rail {
   list-style: none;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.55rem 0.35rem;
   margin-top: 1.75rem;
-  padding-top: 1.25rem;
+  padding: 1.25rem 0 0.35rem;
   border-top: 1px solid var(--color-line);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
 .category-rail a {
   display: inline-flex;
   align-items: baseline;
   gap: 0.45rem;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
   padding: 0.55rem 1rem;
   font-family: var(--font-display);
   font-size: 0.92rem;
@@ -1482,6 +1440,167 @@ button {
   }
 }
 
+/* Home featured teasers */
+.featured-grid {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.featured-teaser {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(1.35rem, 3.5vw, 2.75rem);
+  align-items: center;
+  padding-bottom: 2.25rem;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.featured-teaser:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.featured-teaser-media {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  min-height: 260px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #ebe3d8, #d8c9b8);
+}
+
+.featured-teaser-media img {
+  transition: transform 1.1s var(--ease);
+}
+
+.featured-teaser:hover .featured-teaser-media img {
+  transform: scale(1.03);
+}
+
+.featured-teaser-body {
+  display: grid;
+  gap: 0.7rem;
+  max-width: 28rem;
+}
+
+.featured-teaser-body h3 {
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.6vw, 1.85rem);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--color-tea);
+  line-height: 1.25;
+}
+
+.featured-teaser-meta {
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+  color: var(--color-moss);
+}
+
+.featured-teaser-desc {
+  color: var(--color-muted);
+  line-height: 1.8;
+}
+
+.featured-teaser-price {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.1rem;
+  align-items: baseline;
+  margin: 0.2rem 0 0.35rem;
+}
+
+.featured-teaser-price span:first-child {
+  font-family: var(--font-english);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-tea);
+}
+
+.featured-teaser-price span:last-child {
+  font-size: 0.95rem;
+  color: var(--color-moss);
+}
+
+.featured-teaser-body .btn {
+  justify-self: start;
+  margin-top: 0.35rem;
+}
+
+/* About full-bleed intro */
+.about-hero {
+  position: relative;
+  min-height: min(72vh, 640px);
+  display: grid;
+  align-items: end;
+  color: var(--color-white);
+  overflow: hidden;
+}
+
+.about-hero-media {
+  position: absolute;
+  inset: 0;
+}
+
+.about-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 14, 10, 0.25) 0%,
+      rgba(12, 8, 6, 0.72) 100%
+    ),
+    linear-gradient(90deg, rgba(12, 8, 6, 0.55) 0%, transparent 60%);
+}
+
+.about-hero-content {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2.75rem, var(--max-width));
+  margin: 0 auto 3.5rem;
+  max-width: 34rem;
+  animation: riseIn 0.95s var(--ease) both;
+}
+
+.about-hero-content .eyebrow {
+  color: var(--color-gold-soft);
+}
+
+.about-hero-content h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  margin: 0.85rem 0 1rem;
+  line-height: 1.2;
+}
+
+.about-hero-content p {
+  font-size: 1.02rem;
+  line-height: 1.85;
+  color: rgba(255, 252, 247, 0.88);
+  font-weight: 300;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .hero-media img,
+  .split-media img,
+  .hero-content,
+  .about-hero-content,
+  .featured-teaser-media img,
+  .product-image img {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 @media (max-width: 900px) {
   :root {
     --nav-height: 72px;
@@ -1518,13 +1637,20 @@ button {
     padding: 1rem;
   }
 
-  .hero-text-en {
-    margin-bottom: 1.65rem;
-    font-size: 0.86rem;
+  .featured-teaser {
+    grid-template-columns: 1fr;
   }
 
-  .category-rail {
-    gap: 0.25rem;
+  .featured-teaser-media {
+    min-height: 220px;
+  }
+
+  .about-hero {
+    min-height: min(58vh, 480px);
+  }
+
+  .about-hero-content {
+    margin-bottom: 2.25rem;
   }
 
   .category-rail a {

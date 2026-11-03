@@ -21,20 +21,19 @@ const order: Exclude<ProductCategory, "test">[] = [
 
 export default function ProductsPage() {
   const catalog = getCatalogProducts();
-  const testSku = getProductById("paypal-test-cent");
+  const showTestSku =
+    process.env.SHOW_TEST_SKU === "true" ||
+    process.env.NODE_ENV !== "production";
+  const testSku = showTestSku ? getProductById("paypal-test-cent") : undefined;
 
   return (
     <section className="section section-page">
       <div className="container">
         <div className="page-hero">
           <p className="eyebrow">Collection</p>
-          <h1>产品 Products</h1>
+          <h1>产品</h1>
           <p className="muted page-lead">
-            按场景选茶：日常、品鉴与礼赠。每款标明产地、工艺与口感。
-          </p>
-          <p className="page-lead-en" lang="en">
-            Clear grades, origin notes, and bilingual intros — shop with PayPal
-            or Alipay.
+            按场景选茶：日常、品鉴与礼赠。每款标明产地与口感。
           </p>
           <ul className="category-rail" aria-label="产品分类">
             {order.map((key) => (

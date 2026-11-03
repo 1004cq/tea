@@ -12,16 +12,23 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <>
-      <section className="section section-page">
-        <div className="container page-hero">
+      <section className="about-hero">
+        <div className="about-hero-media" aria-hidden="true">
+          <Image
+            src={siteImages.about}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            style={{ objectFit: "cover", objectPosition: "center 35%" }}
+          />
+          <div className="about-hero-overlay" />
+        </div>
+        <div className="about-hero-content">
           <p className="eyebrow">About</p>
           <h1>关于凤庆滇红</h1>
-          <p className="muted page-lead">
-            滇红产自云南，凤庆是其重要发祥地之一。我们以工夫红茶工艺，呈现高山茶的蜜香与醇厚。
-          </p>
-          <p className="page-lead-en" lang="en">
-            Dianhong black tea from Fengqing, Yunnan — highland gardens and
-            gongfu craft, told simply.
+          <p>
+            滇红产自云南，凤庆是其重要发祥地之一。工夫红茶工艺，呈现高山茶的蜜香与醇厚。
           </p>
         </div>
       </section>
@@ -30,11 +37,11 @@ export default function AboutPage() {
         <div className="container split">
           <div className="split-media">
             <Image
-              src={siteImages.about}
-              alt="高山茶园采摘"
+              src={siteImages.story}
+              alt="茶汤与干茶"
               fill
               sizes="(max-width: 900px) 100vw, 50vw"
-              style={{ objectFit: "cover", objectPosition: "center 35%" }}
+              style={{ objectFit: "cover", objectPosition: "center 30%" }}
             />
           </div>
           <div className="split-copy prose">
@@ -44,10 +51,6 @@ export default function AboutPage() {
               凤庆地处云南临沧，群山云雾，昼夜温差明显，茶树生长缓慢，内含物质丰富。
               早春采摘的一芽一叶、一芽二叶，经萎凋、揉捻、发酵、干燥等工夫红茶工序，
               形成滇红标志性的红亮汤色与蜜香。
-            </p>
-            <p className="split-en" lang="en">
-              Mist, altitude, and slow growth — the natural foundation of
-              Fengqing’s honeyed black teas.
             </p>
           </div>
         </div>
@@ -69,27 +72,17 @@ export default function AboutPage() {
               <p className="muted">
                 冯绍裘在凤庆创制滇红，奠定工夫红茶在云南的工艺基础。
               </p>
-              <p className="pillar-en" lang="en">
-                Feng Shaoqiu pioneers Dianhong gongfu black tea in Fengqing.
-              </p>
             </article>
             <article>
               <h3>产地</h3>
               <p className="muted">
                 临沧凤庆成为滇红核心产区，高山茶园至今仍是品质的重要坐标。
               </p>
-              <p className="pillar-en" lang="en">
-                Fengqing remains a defining origin for Yunnan black tea.
-              </p>
             </article>
             <article>
               <h3>今日</h3>
               <p className="muted">
-                我们以独立站直达顾客：说明清楚、包装克制、结账简单，让好茶不必喧哗。
-              </p>
-              <p className="pillar-en" lang="en">
-                A direct, bilingual shop — clear specs, quiet packaging, simple
-                checkout.
+                独立站直达顾客：说明清楚、包装克制、结账简单，让好茶不必喧哗。
               </p>
             </article>
           </div>
@@ -102,12 +95,12 @@ export default function AboutPage() {
             <p className="eyebrow">Craft</p>
             <h2>我们的坚持</h2>
             <p>
-              小批量精制，拒绝过度炒作。每一款产品标注等级与净重，方便按日常、品鉴或礼赠选择。
+              小批量精制。每一款产品标注等级与净重，方便按日常、品鉴或礼赠选择。
             </p>
           </div>
           <div className="about-cta">
             <Link href="/products" className="btn btn-primary">
-              Shop the collection · 选购
+              选购 · Shop
             </Link>
           </div>
         </div>

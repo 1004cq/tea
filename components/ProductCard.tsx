@@ -21,7 +21,10 @@ export default function ProductCard({
     product.category !== "test" ? categoryLabels[product.category] : null;
 
   return (
-    <article className={`product-item${isTest ? " is-test" : ""}`}>
+    <article
+      id={product.id}
+      className={`product-item${isTest ? " is-test" : ""}`}
+    >
       <div className="product-image">
         <Image
           src={product.image}
@@ -69,21 +72,14 @@ export default function ProductCard({
         {!isTest ? (
           <dl className="product-specs">
             <div>
-              <dt>产地 Origin</dt>
+              <dt>产地</dt>
               <dd>
                 {product.origin}
                 <span lang="en">{product.originEn}</span>
               </dd>
             </div>
             <div>
-              <dt>工艺 Craft</dt>
-              <dd>
-                {product.craft}
-                <span lang="en">{product.craftEn}</span>
-              </dd>
-            </div>
-            <div>
-              <dt>口感 Taste</dt>
+              <dt>口感</dt>
               <dd>
                 {product.taste}
                 <span lang="en">{product.tasteEn}</span>
@@ -94,10 +90,8 @@ export default function ProductCard({
 
         <div className="purchase-panel">
           <div className="purchase-head">
-            <p className="purchase-label">Checkout · 结账</p>
-            <p className="purchase-price-inline">
-              {currency} {product.price.toFixed(2)}
-            </p>
+            <p className="purchase-label">购买 · Buy</p>
+            <p className="purchase-hint">PayPal 收美元 · 支付宝收人民币</p>
           </div>
           <PayPalCheckout
             productId={product.id}
