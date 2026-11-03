@@ -220,6 +220,22 @@ export async function queryAlipayTrade(input: {
   return result as Record<string, unknown>;
 }
 
+/** Max length for a single request-derived string written to the event log. */
+export const ALIPAY_LOG_FIELD_MAX = 128;
+
+export function capAlipayLogField(
+  value: string,
+  max = ALIPAY_LOG_FIELD_MAX
+): string {
+  if (value.length <= max) return value;
+  return value.slice(0, max);
+}
+
+/**
+ * Append one payment event. Throws when the line cannot be persisted so
+ * callers that acknowledge Alipay (notify "success") can fail closed and
+ * let Alipay retry. Audit-only callers should use tryAppendAlipayEvent.
+ */
 export async function appendAlipayEvent(
   kind: string,
   payload: Record<string, unknown>
@@ -238,6 +254,20 @@ export async function appendAlipayEvent(
     await appendFile(logFile, `${line}\n`, "utf8");
   } catch (error) {
     console.error("[alipay] failed to append event log", error);
+    throw error;
+  }
+}
+
+/** Best-effort audit log. Does not acknowledge a payment. */
+export async function tryAppendAlipayEvent(
+  kind: string,
+  payload: Record<string, unknown>
+): Promise<void> {
+  try {
+    await appendAlipayEvent(kind, payload);
+  } catch {
+    // appendAlipayEvent already logged the cause. Checkout and the
+    // browser return page must still complete when the log is unavailable.
   }
 }
 

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProductById } from "@/lib/products";
 import {
-  appendAlipayEvent,
   createAlipayPayUrl,
   createOutTradeNo,
   formatCnyAmount,
   isAlipayConfigured,
   resolveAlipayPayChannel,
+  tryAppendAlipayEvent,
 } from "@/lib/alipay";
 
 /**
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       channel,
     });
 
-    await appendAlipayEvent("create_order", {
+    await tryAppendAlipayEvent("create_order", {
       outTradeNo,
       productId: product.id,
       totalAmount,

@@ -2,11 +2,19 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getProductById } from "@/lib/products";
 import {
-  appendAlipayEvent,
+  capAlipayLogField,
+  formatCnyAmount,
   isAlipayConfigured,
   queryAlipayTrade,
+  tryAppendAlipayEvent,
   verifyAlipayNotify,
 } from "@/lib/alipay";
+import {
+  assessAlipayReturn,
+  canQueryAlipayReturn,
+  decodeAlipayPassback,
+  readAlipayString,
+} from "@/lib/alipay-return";
 
 export const metadata: Metadata = {
   title: "支付宝结果",
@@ -28,7 +36,9 @@ function first(
 
 /**
  * GET /aipay — Alipay sync return_url.
- * Payment success must still be confirmed via notify or trade query.
+ * A valid RSA2 signature is required before trade.query and before
+ * showing paid or product confirmation. The product comes from signed
+ * passback / query passback only when the paid amount matches it.
  */
 export default async function AlipayReturnPage({
   searchParams,
@@ -42,50 +52,76 @@ export default async function AlipayReturnPage({
 
   const outTradeNo = flat.out_trade_no || "";
   const tradeNo = flat.trade_no || "";
-  const passbackRaw = flat.passback_params || "";
-  const productId = passbackRaw ? decodeURIComponent(passbackRaw) : "";
-  const product = productId ? getProductById(productId) : undefined;
+  const hasReturnParams = Object.keys(flat).length > 0;
 
   let verified = false;
   let tradeStatus: string | undefined;
   let queryError: string | undefined;
+  let paid = false;
+  let confirmedProductId = "";
 
-  if (isAlipayConfigured() && Object.keys(flat).length > 0) {
+  if (isAlipayConfigured() && hasReturnParams) {
     try {
       verified = verifyAlipayNotify(flat);
     } catch {
       verified = false;
     }
+  }
 
+  if (canQueryAlipayReturn(verified, outTradeNo, tradeNo)) {
     try {
-      if (outTradeNo || tradeNo) {
-        const query = await queryAlipayTrade({ outTradeNo, tradeNo });
-        tradeStatus = String(
-          query.tradeStatus || query.trade_status || ""
-        );
-        await appendAlipayEvent("return", {
-          outTradeNo,
-          tradeNo,
-          verified,
-          tradeStatus,
-          productId: productId || undefined,
-          query,
-        });
-      }
+      const query = await queryAlipayTrade({ outTradeNo, tradeNo });
+      tradeStatus = readAlipayString(query, "tradeStatus", "trade_status");
+      const signedId = decodeAlipayPassback(flat.passback_params);
+      const queryPassback = readAlipayString(
+        query,
+        "passbackParams",
+        "passback_params"
+      );
+      const queryId = decodeAlipayPassback(queryPassback);
+      const candidateId =
+        signedId && queryId && signedId !== queryId ? "" : queryId || signedId;
+      const candidate = candidateId ? getProductById(candidateId) : undefined;
+      const assessment = assessAlipayReturn({
+        verified: true,
+        tradeStatus,
+        signedPassback: flat.passback_params,
+        queryPassback,
+        queryAmount: readAlipayString(query, "totalAmount", "total_amount"),
+        signedAmount: flat.total_amount,
+        catalogAmount: candidate
+          ? formatCnyAmount(candidate.price)
+          : undefined,
+      });
+      paid = assessment.paid;
+      confirmedProductId = assessment.productId;
+
+      await tryAppendAlipayEvent("return", {
+        outTradeNo: capAlipayLogField(outTradeNo),
+        tradeNo: capAlipayLogField(tradeNo),
+        verified: true,
+        tradeStatus: capAlipayLogField(tradeStatus),
+        productId: assessment.productId
+          ? capAlipayLogField(assessment.productId)
+          : undefined,
+        amountMatches: assessment.amountMatches,
+        query,
+      });
     } catch (error) {
       queryError =
         error instanceof Error ? error.message : "查询交易失败";
-      await appendAlipayEvent("return_query_error", {
-        outTradeNo,
-        tradeNo,
-        verified,
-        message: queryError,
+      await tryAppendAlipayEvent("return_query_error", {
+        outTradeNo: capAlipayLogField(outTradeNo),
+        tradeNo: capAlipayLogField(tradeNo),
+        verified: true,
+        message: capAlipayLogField(queryError, 300),
       });
     }
   }
 
-  const paid =
-    tradeStatus === "TRADE_SUCCESS" || tradeStatus === "TRADE_FINISHED";
+  const product = confirmedProductId
+    ? getProductById(confirmedProductId)
+    : undefined;
 
   return (
     <section className="container success-panel">
@@ -124,7 +160,7 @@ export default async function AlipayReturnPage({
               <dd>{tradeStatus}</dd>
             </>
           ) : null}
-          {Object.keys(flat).length > 0 ? (
+          {hasReturnParams ? (
             <>
               <dt>同步验签</dt>
               <dd>{verified ? "通过" : "未通过或无签名"}</dd>
