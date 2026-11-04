@@ -5,6 +5,7 @@ import {
   getProductById,
   type ProductCategory,
 } from "@/lib/products";
+import { showAlipayTestSku, showPaypalTestSku } from "@/lib/test-skus";
 import ProductCard from "@/components/ProductCard";
 
 export const metadata: Metadata = {
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
   description:
     "Browse Fengqing Dianhong: classic, golden needle, aged, and gift set.",
 };
+
+/** Env flags for test SKUs must be read per request. */
+export const dynamic = "force-dynamic";
 
 const order: Exclude<ProductCategory, "test">[] = [
   "daily",
@@ -21,10 +25,10 @@ const order: Exclude<ProductCategory, "test">[] = [
 
 export default function ProductsPage() {
   const catalog = getCatalogProducts();
-  const showTestSku =
-    process.env.SHOW_TEST_SKU === "true" ||
-    process.env.NODE_ENV !== "production";
-  const testSku = showTestSku ? getProductById("paypal-test-cent") : undefined;
+  const testSkus = [
+    showPaypalTestSku() ? getProductById("paypal-test-cent") : undefined,
+    showAlipayTestSku() ? getProductById("alipay-test-fen") : undefined,
+  ].filter(Boolean);
 
   return (
     <section className="section section-page">
@@ -69,7 +73,7 @@ export default function ProductsPage() {
           );
         })}
 
-        {testSku ? (
+        {testSkus.length ? (
           <div className="test-sku-block">
             <div className="section-head compact">
               <p className="eyebrow">Payment Test</p>
@@ -77,7 +81,11 @@ export default function ProductsPage() {
               <p>仅用于验证最低金额收款，非正式售卖。</p>
             </div>
             <div className="product-grid">
-              <ProductCard product={testSku} />
+              {testSkus.map((product) =>
+                product ? (
+                  <ProductCard key={product.id} product={product} />
+                ) : null
+              )}
             </div>
           </div>
         ) : null}

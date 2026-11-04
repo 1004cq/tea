@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProductById } from "@/lib/products";
+import { showAlipayTestSku } from "@/lib/test-skus";
 import {
   createAlipayPayUrl,
   createOutTradeNo,
@@ -42,6 +43,19 @@ export async function POST(request: NextRequest) {
     const product = getProductById(productId);
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    if (product.category === "test" && product.testProvider !== "alipay") {
+      return NextResponse.json(
+        { error: "This test product is not available through Alipay" },
+        { status: 403 }
+      );
+    }
+    if (product.category === "test" && !showAlipayTestSku()) {
+      return NextResponse.json(
+        { error: "支付宝测试商品未启用（需要 SHOW_ALIPAY_TEST_SKU=true）" },
+        { status: 403 }
+      );
     }
 
     const channel = resolveAlipayPayChannel({
