@@ -8,6 +8,8 @@ import { productImages } from "@/lib/images";
 
 export type ProductCategory = "daily" | "tasting" | "gift" | "test";
 
+export type TestProvider = "paypal" | "alipay";
+
 export type Product = {
   id: string;
   name: string;
@@ -23,6 +25,8 @@ export type Product = {
   weight: string;
   grade: string;
   category: ProductCategory;
+  /** Which checkout a smoke-test SKU is meant for */
+  testProvider?: TestProvider;
   origin: string;
   originEn: string;
   craft: string;
@@ -43,18 +47,41 @@ export const categoryLabels: Record<
 export const products: Product[] = [
   {
     id: "paypal-test-cent",
-    name: "支付测试（1美分）",
-    nameEn: "Payment Test (1¢)",
+    name: "PayPal 测试（1美分）",
+    nameEn: "PayPal Test (USD 0.01)",
     price: 0.01,
     priceCny: 0.01,
-    description: "用于 PayPal / 支付宝最低金额联调，非正式售卖商品。",
-    descriptionEn: "Checkout smoke test only — not for sale.",
+    description: "仅用于 PayPal 最低金额联调，非正式售卖商品。",
+    descriptionEn: "PayPal smoke test only — not for sale.",
     longDescription:
-      "此商品仅用于验证支付链路能否以最低金额（0.01 USD / ¥0.01）完成下单与收款。请勿作为正式茶叶商品售卖。",
+      "此商品仅用于以 USD 0.01 验证 PayPal 下单与收款。请用 PayPal 按钮；勿用于正式茶叶售卖。",
     image: productImages.test,
     weight: "—",
     grade: "测试",
     category: "test",
+    testProvider: "paypal",
+    origin: "—",
+    originEn: "—",
+    craft: "—",
+    craftEn: "—",
+    taste: "—",
+    tasteEn: "—",
+  },
+  {
+    id: "alipay-test-fen",
+    name: "支付宝测试（1分人民币）",
+    nameEn: "Alipay Test (CNY 0.01)",
+    price: 0.01,
+    priceCny: 0.01,
+    description: "仅用于支付宝最低金额联调，非正式售卖商品。",
+    descriptionEn: "Alipay smoke test only — not for sale.",
+    longDescription:
+      "此商品仅用于以 ¥0.01 验证支付宝下单与回调。请用支付宝按钮；勿用于正式茶叶售卖。",
+    image: productImages.test,
+    weight: "—",
+    grade: "测试",
+    category: "test",
+    testProvider: "alipay",
     origin: "—",
     originEn: "—",
     craft: "—",

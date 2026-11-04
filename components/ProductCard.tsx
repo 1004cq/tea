@@ -91,18 +91,28 @@ export default function ProductCard({
         <div className="purchase-panel">
           <div className="purchase-head">
             <p className="purchase-label">购买 · Buy</p>
-            <p className="purchase-hint">PayPal 收美元 · 支付宝收人民币</p>
+            <p className="purchase-hint">
+              {product.testProvider === "paypal"
+                ? "PayPal 测款 · 仅美元"
+                : product.testProvider === "alipay"
+                  ? "支付宝测款 · 仅人民币"
+                  : "PayPal 收美元 · 支付宝收人民币"}
+            </p>
           </div>
-          <PayPalCheckout
-            productId={product.id}
-            productName={product.name}
-            price={product.price}
-          />
-          <AlipayCheckout
-            productId={product.id}
-            productName={product.name}
-            price={product.priceCny}
-          />
+          {product.testProvider !== "alipay" ? (
+            <PayPalCheckout
+              productId={product.id}
+              productName={product.name}
+              price={product.price}
+            />
+          ) : null}
+          {product.testProvider !== "paypal" ? (
+            <AlipayCheckout
+              productId={product.id}
+              productName={product.name}
+              price={product.priceCny}
+            />
+          ) : null}
         </div>
       </div>
     </article>
